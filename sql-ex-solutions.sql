@@ -152,3 +152,74 @@ SELECT maker, MAX(price) AS max_price
 FROM product
 JOIN pc ON product.model=pc.model
 GROUP BY maker
+
+--22
+SELECT speed, AVG(price) AS avg_price 
+FROM pc
+WHERE speed>600
+GROUP BY speed
+
+--23
+SELECT maker FROM product
+JOIN pc ON product.model=pc.model
+WHERE speed>=750
+INTERSECT
+SELECT maker FROM product
+JOIN laptop ON product.model=laptop.model
+WHERE speed>=750
+
+--24
+WITH a AS (SELECT model, price
+FROM pc 
+UNION
+SELECT model, price
+FROM laptop
+UNION
+SELECT model, price
+FROM printer) 
+
+SELECT model
+FROM a
+WHERE price=(SELECT MAX(price) FROM a)
+
+--25
+WITH a AS (SELECT ram, speed FROM pc WHERE ram=(SELECT MIN(ram) FROM pc))
+
+SELECT DISTINCT maker
+FROM product p JOIN printer pr
+ON p.model=pr.model
+WHERE maker IN (SELECT maker 
+FROM product p JOIN pc
+ON p.model=pc.model
+WHERE ram=(SELECT MIN(ram) FROM a) 
+AND speed=(SELECT MAX(speed) FROM a))
+
+--26
+SELECT AVG(price)
+FROM (SELECT maker, price FROM pc
+      JOIN product ON product.model=pc.model WHERE maker='A'
+      UNION ALL
+      SELECT maker, price FROM laptop
+      JOIN product ON product.model=laptop.model WHERE maker='A')T
+
+-- 27
+SELECT maker, AVG(hd) from pc
+JOIN product ON product.model=pc.model
+WHERE maker IN (SELECT maker from product WHERE type='Printer')
+GROUP BY maker
+
+--28
+SELECT COUNT(maker)
+FROM (SELECT maker 
+      FROM product 
+      GROUP BY maker
+      HAVING COUNT(model)=1)T
+
+--29
+SELECT i.point, i.date, inc, out
+FROM income_o i LEFT JOIN  outcome_o o
+      ON i.point=o.point AND i.date=o.date
+UNION
+SELECT o.point, o.date, inc, out
+FROM income_o i RIGHT JOIN  outcome_o o
+      ON i.point=o.point AND i.date=o.date
